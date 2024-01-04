@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import declarative_base, relationship
+from db.connector import conn
 
-engine = create_engine('mysql+mysqlconnector://psel_varos:psel_varos@localhost/teste', echo=True)
+engine = conn()
 
 Base = declarative_base()
 
@@ -11,14 +12,21 @@ class Date(Base):
     id = Column(Integer, primary_key=True)
     date = Column(DateTime(timezone=True))
 
+    # Relacionamentos bidirecionais
+    news = relationship('News', back_populates='date', foreign_keys='News.date_id')
+    prices = relationship('Prices', back_populates='date', foreign_keys='Prices.date_id')
+
 class Stocks(Base):
     __tablename__ = 'dim_stocks'
 
     company_id = Column(Integer, primary_key=True)
     company_name = Column(String(255))
     cod_search = Column(String(255))
+    ticker = Column(String(255))
 
-    news = relationship('News', back_populates='dim_stocks')   
+    # Relacionamentos bidirecionais
+    news = relationship('News', back_populates='stock', foreign_keys='News.company_id')
+    prices = relationship('Prices', back_populates='stock', foreign_keys='Prices.company_id')
 
 class News(Base):
     __tablename__ = 'fat_news'
@@ -29,9 +37,9 @@ class News(Base):
     link = Column(String(255))
     dat_data = Column(DateTime(timezone=True))
 
-    stock = relationship('Stocks', back_populates='fat_news')
-    date = relationship('Date', back_populates='fat_news')
-
+    stock = relationship('Stocks', back_populates='news', foreign_keys=[company_id])
+    date_id = Column(Integer, ForeignKey('dim_tempo.id'))  
+    date = relationship('Date', back_populates='news', foreign_keys=[date_id])
 
 class Prices(Base):
     __tablename__ = 'fat_prices'
@@ -45,8 +53,8 @@ class Prices(Base):
     close_price = Column(Float)
     adj_close_price = Column(Float)
 
-    stock = relationship('Stocks', back_populates='fat_prices')
-    date = relationship('Date', back_populates='fat_prices')
+    stock = relationship('Stocks', back_populates='prices', foreign_keys=[company_id])
+    date_id = Column(Integer, ForeignKey('dim_tempo.id'))  
+    date = relationship('Date', back_populates='prices', foreign_keys=[date_id])
 
 Base.metadata.create_all(engine)
-
