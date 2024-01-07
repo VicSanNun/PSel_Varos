@@ -3,11 +3,12 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from db.connector import conn
 from CRUD.companies import Companies_CRUD
 from CRUD.news import News_CRUD
 from CRUD.stocks import Stocks_CRUD
+from dash.exceptions import PreventUpdate
 
 company = Companies_CRUD(conn())
 news = News_CRUD(conn())
@@ -16,7 +17,7 @@ stocks = Stocks_CRUD(conn())
 JOURNAL_URL = "https://braziljournal.com/"
 ids = {"petro_id": 1, "weg_id": 2, "cea_id": 3}
 
-#valores iniciais
+# valores iniciais
 company_id = ids["weg_id"]
 company_data = company.get_company_data(company_id)
 
@@ -37,10 +38,10 @@ app.layout = html.Div([
         multi=False
     ),
 
-    dcc.Graph(id='candlestick-chart'),
-
-    html.H2("Notícias"),
-    html.Div(id='news-list')
+    html.Div([
+        dcc.Graph(id='candlestick-chart'),
+        html.Div(id='news-list')
+    ], style={'display': 'flex'}),
 ])
 
 @app.callback(
@@ -50,7 +51,7 @@ app.layout = html.Div([
 def update_candlestick_chart(company_id):
 
     company_data = company.get_company_data(company_id)
-    company_ticker= company_data[0].ticker 
+    company_ticker = company_data[0].ticker
     start_date = '2023-01-01'
 
     stock_data = stocks.get_stock_data(company_id, company_ticker, start_date)
@@ -77,8 +78,11 @@ def update_news_list(company_id):
 
     if articles is not None:
         news_list = [html.Div([
-            html.H3(news_item['title']),
-            html.P(f"Link: {news_item['link']}"),
+            html.A(
+                html.H3(news_item['title'], style={'color': 'black'}),
+                href=news_item['link'],
+                target='_blank'  # Abre em uma nova guia
+            ),
             html.P(f"Date: {news_item['dat_data']}") if 'dat_data' in news_item else None,
             html.Hr()
         ]) for news_item in articles]
