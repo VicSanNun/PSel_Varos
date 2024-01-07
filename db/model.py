@@ -19,7 +19,7 @@ class Company(Base):
 
     # Relacionamentos bidirecionais
     news = relationship('News', back_populates='company', foreign_keys='News.company_id')
-    prices = relationship('Prices', back_populates='company', foreign_keys='Prices.company_id')
+    stocks = relationship('Stocks', back_populates='company', foreign_keys='Stocks.company_id')
 
 class News(Base):
     __tablename__ = 'fat_news'
@@ -32,8 +32,8 @@ class News(Base):
 
     company = relationship('Company', back_populates='news', foreign_keys=[company_id])
 
-class Prices(Base):
-    __tablename__ = 'fat_prices'
+class Stocks(Base):
+    __tablename__ = 'fat_stocks'
 
     id = Column(Integer, primary_key=True)
     dat_data = Column(DateTime(timezone=True))
@@ -44,6 +44,6 @@ class Prices(Base):
     close_price = Column(Float)
     adj_close_price = Column(Float)
 
-    company = relationship('Company', back_populates='prices', foreign_keys=[company_id])
+    company = relationship('Company', back_populates='stocks', foreign_keys=[company_id])
 
 Base.metadata.create_all(engine)
