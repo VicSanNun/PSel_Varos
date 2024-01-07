@@ -15,10 +15,9 @@ class Stocks_CRUD:
     
     def get_today_or_last_working_day(self):
         today = pd.Timestamp('today')
-        if today.weekday() < 5:  # Se hoje for um dia útil (segunda a sexta)
+        if today.weekday() < 5:
             return today
         else:
-            # Encontrar o último dia útil
             last_working_day = today - pd.tseries.offsets.BDay(1)
             return last_working_day
 
@@ -34,14 +33,11 @@ class Stocks_CRUD:
     
 
     def get_stock_data(self, company_id, ticker, start_date):
-        updated_data = []  # Lista para armazenar os dados adicionados ou atualizados
-
+        updated_data = []
         try:
             latest_record = self.session.query(Stocks).filter_by(company_id=company_id).order_by(Stocks.dat_data.desc()).all()
-
             if not latest_record:
-                    # Se não houver dados no banco de dados, buscar no yahoo finance
-                stock_data_yahoo = self.get_stock_yahoo(ticker, start_date)  # Substitua pela data desejada
+                stock_data_yahoo = self.get_stock_yahoo(ticker, start_date) 
             
                 for index, row in stock_data_yahoo.iterrows():
                     new_stock_data = Stocks(
@@ -54,10 +50,9 @@ class Stocks_CRUD:
                         adj_close_price=row['Adj Close']
                     )
                     self.session.add(new_stock_data)
-                    updated_data.append(new_stock_data)  # Adiciona à lista
+                    updated_data.append(new_stock_data)
 
                 self.session.commit()
-                print("Dados adicionados ao banco de dados.")
                 return updated_data
             
             elif (self.get_today_or_last_working_day() - latest_record[0].dat_data).days > 1:
@@ -73,10 +68,9 @@ class Stocks_CRUD:
                         adj_close_price=row['Adj Close']
                     )
                     self.session.add(new_stock_data)
-                    updated_data.append(new_stock_data)  # Adiciona à lista
+                    updated_data.append(new_stock_data)
             
                 self.session.commit()
-                print("Dados atualizados no banco de dados.")
                 return updated_data
             
             else:

@@ -1,47 +1,91 @@
+import pandas as pd
+import plotly.graph_objects as go
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
 from db.connector import conn
 from CRUD.companies import Companies_CRUD
 from CRUD.news import News_CRUD
 from CRUD.stocks import Stocks_CRUD
 
-JOURNAL_URL = "https://braziljournal.com/"
-
-ids = {"petro_id": 1, "weg_id": 2, "cea_id": 3}
-
 company = Companies_CRUD(conn())
 news = News_CRUD(conn())
 stocks = Stocks_CRUD(conn())
 
-petro_data = company.get_company_data(ids["petro_id"])
-weg_data = company.get_company_data(ids["weg_id"])
-cea_data = company.get_company_data(ids["cea_id"])
+JOURNAL_URL = "https://braziljournal.com/"
+ids = {"petro_id": 1, "weg_id": 2, "cea_id": 3}
 
-petro_cod_search = petro_data[0].cod_search
-weg_cod_search = weg_data[0].cod_search
-cea_cod_search = cea_data[0].cod_search
+#valores iniciais
+company_id = ids["weg_id"]
+company_data = company.get_company_data(company_id)
 
-petro_ticker= petro_data[0].ticker
-weg_ticker= weg_data[0].ticker
-cea_ticker= cea_data[0].ticker
+app = dash.Dash(__name__)
 
-start_date = "2023-01-01"
+app.layout = html.Div([
+    html.H1("Dashboard de Ações e Notícias"),
 
-stock_data = stocks.get_stock_data(ids["petro_id"], weg_ticker, start_date)
+    html.Label("Selecione o Ticker da Ação:"),
+    dcc.Dropdown(
+        id='dropdown-ticker',
+        options=[
+            {'label': 'PETR4', 'value': '1'},
+            {'label': 'WEGE3', 'value': '2'},
+            {'label': 'CEAB3', 'value': '3'},
+        ],
+        value='1',
+        multi=False
+    ),
 
-print(stock_data)
+    dcc.Graph(id='candlestick-chart'),
 
-for stock in stock_data:
-    print(f"Date: {stock.dat_data}, Open: {stock.open_price}, High: {stock.max_price}, Low: {stock.min_price}, Close: {stock.close_price}, Adj Close: {stock.adj_close_price}")
+    html.H2("Notícias"),
+    html.Div(id='news-list')
+])
 
+@app.callback(
+    Output('candlestick-chart', 'figure'),
+    [Input('dropdown-ticker', 'value')]
+)
+def update_candlestick_chart(company_id):
 
-petro_articles = news.get_news(JOURNAL_URL, weg_cod_search, ids["petro_id"])
-print(petro_articles)
+    company_data = company.get_company_data(company_id)
+    company_ticker= company_data[0].ticker 
+    start_date = '2023-01-01'
 
-if petro_articles is not None:
-    for news_item in petro_articles:
-        print(f"Title: {news_item['title']}")
-        print(f"Link: {news_item['link']}")
-        if 'dat_data' in news_item:
-            print(f"Date: {news_item['dat_data']}")
-        print("------")
-else:
-    print("Não foi possível obter as notícias.")
+    stock_data = stocks.get_stock_data(company_id, company_ticker, start_date)
+    df = pd.DataFrame([(stock.dat_data, stock.open_price, stock.max_price, stock.min_price, stock.close_price, stock.adj_close_price) for stock in stock_data],
+                      columns=['dat_data', 'open_price', 'high_price', 'low_price', 'close_price', 'adj_close_price'])
+    df['dat_data'] = pd.to_datetime(df['dat_data'])
+    df.columns = df.columns.str.lower()
+
+    fig_candlestick = go.Figure(data=[go.Candlestick(x=df['dat_data'],
+                                                      open=df['open_price'],
+                                                      high=df['high_price'],
+                                                      low=df['low_price'],
+                                                      close=df['close_price'])])
+
+    return fig_candlestick
+
+@app.callback(
+    Output('news-list', 'children'),
+    [Input('dropdown-ticker', 'value')]
+)
+def update_news_list(company_id):
+    company_cod_search = company_data[0].cod_search
+    articles = news.get_news(JOURNAL_URL, company_cod_search, company_id)
+
+    if articles is not None:
+        news_list = [html.Div([
+            html.H3(news_item['title']),
+            html.P(f"Link: {news_item['link']}"),
+            html.P(f"Date: {news_item['dat_data']}") if 'dat_data' in news_item else None,
+            html.Hr()
+        ]) for news_item in articles]
+    else:
+        news_list = [html.P("Não foi possível obter as notícias.")]
+
+    return news_list
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
