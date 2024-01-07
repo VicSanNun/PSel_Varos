@@ -1,35 +1,40 @@
-from scrapping_news import get_news
-from get_stocks import get_stock_data
 from db.connector import conn
-from sqlalchemy.orm import sessionmaker
-from db.model import Stocks
+from CRUD.companies import Companies_CRUD
+from CRUD.news import News_CRUD
 
-conn = conn()
+JOURNAL_URL = "https://braziljournal.com/"
 
-Session = sessionmaker(bind=conn)
-session = Session()
+company = Companies_CRUD(conn())
+news = News_CRUD(conn())
 
-PETRO = session.query(Stocks).filter(Stocks.company_id == 1).all()
-WEG = session.query(Stocks).filter(Stocks.company_id == 2).all()
-CEA = session.query(Stocks).filter(Stocks.company_id == 3).all()
+petro_data = company.get_company_data(1)
+weg_data = company.get_company_data(2)
+cea_data = company.get_company_data(3)
 
-BASE_URL = "https://braziljournal.com/"
-start_date = "2023-01-01"
+petro_cod_search = petro_data[0].cod_search
+weg_cod_search = weg_data[0].cod_search
+cea_cod_search = cea_data[0].cod_search
 
-for i in PETRO:
-    print(i.company_name)
+petro_ticker= petro_data[0].ticker
+weg_ticker= weg_data[0].ticker
+cea_ticker= cea_data[0].ticker
+
+# start_date = "2023-01-01"
+
+print(petro_data[0].cod_search)
 
 #print(PETRO.company_name)
 
 # stock_data = get_stock_data(ticker, start_date)
-# articles = get_news(BASE_URL, search)
+petro_articles = news.get_news(JOURNAL_URL, petro_cod_search, 1)
+print(petro_articles)
 
-# for article, _ in zip(articles[:3], range(3)):
-#     header_text = article.text.strip()
-#     link = article.a['href'].strip() if article.a else 'N/A'
-
-#     print(f"Header: {header_text}")
-#     print(f"Link: {link}")
-#     print("------")
-
-# print(stock_data)
+if petro_articles is not None:
+    for news_item in petro_articles:
+        print(f"Title: {news_item['title']}")
+        print(f"Link: {news_item['link']}")
+        if 'dat_data' in news_item:
+            print(f"Date: {news_item['dat_data']}")
+        print("------")
+else:
+    print("Não foi possível obter as notícias.")
