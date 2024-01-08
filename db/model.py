@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import declarative_base, relationship
-if __name__ == "__main__":
+try:
     from connector import conn
-else:
+except ImportError:
     from db.connector import conn
 
 engine = conn()

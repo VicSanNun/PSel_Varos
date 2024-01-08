@@ -3,16 +3,12 @@ import yfinance as yf
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
-if __name__ == "__main__":
+try:
     from connector import conn
-    from model import Company
-    from model import News
-    from model import Stocks
-else:
+    from model import Company, News, Stocks
+except ImportError:
     from db.connector import conn
-    from db.model import Company
-    from db.model import News
-    from db.model import Stocks
+    from db.model import Company, News, Stocks
 
 engine = conn()
 
