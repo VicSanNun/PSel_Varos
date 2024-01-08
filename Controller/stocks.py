@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from db.model import Stocks
 import pandas as pd
 
-class Stocks_CRUD:
+class Stocks_Controller:
     def __init__(self, conn) -> None:
         try:
             self.conn = conn
@@ -36,9 +36,10 @@ class Stocks_CRUD:
         updated_data = []
         try:
             latest_record = self.session.query(Stocks).filter_by(company_id=company_id).order_by(Stocks.dat_data.desc()).all()
+
             if not latest_record:
                 stock_data_yahoo = self.get_stock_yahoo(ticker, start_date) 
-            
+
                 for index, row in stock_data_yahoo.iterrows():
                     new_stock_data = Stocks(
                         dat_data=index,
@@ -51,11 +52,11 @@ class Stocks_CRUD:
                     )
                     self.session.add(new_stock_data)
                     updated_data.append(new_stock_data)
-
+                    
                 self.session.commit()
                 return updated_data
             
-            elif (self.get_today_or_last_working_day() - latest_record[0].dat_data).days > 1:
+            elif (self.get_today_or_last_working_day() - latest_record[0].dat_data).days > 5:
                 stock_data_yahoo = self.get_stock_yahoo(ticker, (latest_record[0].dat_data+timedelta(days=1)).strftime('%Y-%m-%d'))
                 for index, row in stock_data_yahoo.iterrows():
                     new_stock_data = Stocks(

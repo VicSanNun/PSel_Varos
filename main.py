@@ -5,14 +5,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from db.connector import conn
-from CRUD.companies import Companies_CRUD
-from CRUD.news import News_CRUD
-from CRUD.stocks import Stocks_CRUD
+from Controller.companies import Companies_Controller
+from Controller.news import News_Controller
+from Controller.stocks import Stocks_Controller
 from dash.exceptions import PreventUpdate
 
-company = Companies_CRUD(conn())
-news = News_CRUD(conn())
-stocks = Stocks_CRUD(conn())
+company = Companies_Controller(conn())
+news = News_Controller(conn())
+stocks = Stocks_Controller(conn())
 
 JOURNAL_URL = "https://braziljournal.com/"
 ids = {"petro_id": 1, "weg_id": 2, "cea_id": 3}
@@ -24,9 +24,6 @@ company_data = company.get_company_data(company_id)
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    html.H1("Dashboard de Ações e Notícias"),
-
-    html.Label("Selecione o Ticker da Ação:"),
     dcc.Dropdown(
         id='dropdown-ticker',
         options=[
@@ -35,12 +32,12 @@ app.layout = html.Div([
             {'label': 'CEAB3', 'value': '3'},
         ],
         value='1',
-        multi=False
+        multi=False,
     ),
 
     html.Div([
         dcc.Graph(id='candlestick-chart'),
-        html.Div(id='news-list')
+        html.Div(id='news-list',style={'font-family': 'Arial', 'font-size': '20px', 'font-weight': 'bold'})
     ], style={'display': 'flex'}),
 ])
 
@@ -83,9 +80,10 @@ def update_news_list(company_id):
                 href=news_item['link'],
                 target='_blank'  # Abre em uma nova guia
             ),
-            html.P(f"Date: {news_item['dat_data']}") if 'dat_data' in news_item else None,
+            html.P(f"Data: {news_item['dat_data']}") if 'dat_data' in news_item else None,
             html.Hr()
-        ]) for news_item in articles]
+            
+        ], style={'margin-top':'24px'}) for news_item in articles]
     else:
         news_list = [html.P("Não foi possível obter as notícias.")]
 

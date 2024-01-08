@@ -1,8 +1,7 @@
-from db.connector import conn
 from sqlalchemy.orm import sessionmaker
 from db.model import Company
 
-class Companies_CRUD:
+class Companies_Controller:
     def __init__(self, conn) -> None:
         try:
             self.conn = conn

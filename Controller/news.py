@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 
-class News_CRUD:
+class News_Controller:
     def __init__(self, conn) -> None:
         try:
             self.conn = conn
