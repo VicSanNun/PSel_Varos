@@ -37,7 +37,7 @@ app.layout = html.Div([
 
     html.Div([
         dcc.Graph(id='candlestick-chart'),
-        html.Div(id='news-list',style={'font-family': 'Arial', 'font-size': '20px', 'font-weight': 'bold'})
+        html.Div(id='news-list',style={'font-family': 'Arial', 'font-size': '20px', 'font-weight': 'bold', 'margin-top': '70px'})
     ], style={'display': 'flex'}),
 ])
 
@@ -45,6 +45,7 @@ app.layout = html.Div([
     Output('candlestick-chart', 'figure'),
     [Input('dropdown-ticker', 'value')]
 )
+
 def update_candlestick_chart(company_id):
 
     company_data = company.get_company_data(company_id)
@@ -61,7 +62,13 @@ def update_candlestick_chart(company_id):
                                                       open=df['open_price'],
                                                       high=df['high_price'],
                                                       low=df['low_price'],
-                                                      close=df['close_price'])])
+                                                      close=df['close_price']
+                                                      )])
+    
+    fig_candlestick.update_layout(
+        width=750,  
+        height=600  
+    )   
 
     return fig_candlestick
 
@@ -69,21 +76,24 @@ def update_candlestick_chart(company_id):
     Output('news-list', 'children'),
     [Input('dropdown-ticker', 'value')]
 )
+
 def update_news_list(company_id):
     company_cod_search = company_data[0].cod_search
     articles = news.get_news(JOURNAL_URL, company_cod_search, company_id)
 
     if articles is not None:
-        news_list = [html.Div([
+        news_list = [html.H2("Notícias", style={'color': '#4f4f4f', 'font-family': 'Arial', 'font-size': '30px', 'font-weight': 'bold', 'text-align': 'center'}),
+            *[html.Div([
             html.A(
-                html.H3(news_item['title'], style={'color': 'black'}),
+                html.H3(news_item['title']),
+                style={'color': '#292929', 'text-decoration': 'none'},
                 href=news_item['link'],
-                target='_blank'  # Abre em uma nova guia
+                target='_blank'
             ),
             html.P(f"Data: {news_item['dat_data']}") if 'dat_data' in news_item else None,
-            html.Hr()
+            html.Hr(style={'margin-top': '2px', 'margin-bottom': '2px', 'border-color': '#ccc'})
             
-        ], style={'margin-top':'24px'}) for news_item in articles]
+        ]) for news_item in articles]]
     else:
         news_list = [html.P("Não foi possível obter as notícias.")]
 
