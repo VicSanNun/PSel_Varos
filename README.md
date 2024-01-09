@@ -29,5 +29,9 @@ Agora é só executar o "main.py".
 ## Como funciona
 Basicamente, 
 1. O dash solicita os dados de cotação e notícia aos Controllers
-2. Os Controllers, por sua vez, verificam se têm os dados mais atualizados no banco de dados e retornam para o dash.     1. Caso não tenham os dados atualizados, eles buscam (no Yahoo Finance e no Brazil Journal) os dados, atualizam as tabelas e devolvem ao dash.
+2. Os Controllers, por sua vez, verificam se têm os dados mais atualizados no banco de dados e retornam para o dash.
+
+   1. Caso não tenham os dados atualizados, eles buscam (no Yahoo Finance e no Brazil Journal) os dados, atualizam
+   as tabelas e devolvem ao dash.
+   
    2. Caso não tenham dados nenhum, eles buscam (no Yahoo Finance e no Brazil Journal) os dados, populam as tabelas e devolvem ao dash.
