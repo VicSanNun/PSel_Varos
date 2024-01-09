@@ -4,6 +4,8 @@ Neste projeto utilizo principalmente: **Python**, **Dash**, **Plotly**, **MySQL*
 
 O projeto rodando pode ser encontrado em [Dash](http://54.242.99.157:8050/)
 
+![Dash](Dash.png)
+
 O cientista de dados é um profissional interdisciplinar ente matemática, estatísitica, negócio e computação. Além da ponta de negócio, vejo alguns estudantes e profissionais esquecendo de outra coisa fundamental: **computação**.
 
 Muitas vezes limitam-se a saber o básico de python+pandas e só. Ao meu ver, o conhecimento em computação deve ir um pouco além. Não estou dizendo que o profissional de dados seja um engenheiro de software, mas é necessário compreender aspectos básicos de API, Arquitetura e Modelagem de DB.
